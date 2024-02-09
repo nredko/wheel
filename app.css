@@ -30,7 +30,7 @@ html {
 
 input {
   height: 1.5rem;
-  width: 15rem;
+  width: 21rem;
 }
 
 li {
@@ -44,9 +44,19 @@ ul {
   text-align: center;
 }
 
+.select {
+  height: 2rem;
+  width: 11.3rem;
+  margin-top: 0.5rem;
+  background-color: #6495ed;
+  border: 0.05rem solid black;
+  box-shadow: 0 0.7rem 0 -0.1rem #6082b6, 0 0.75rem 0 -0.05rem black;
+  border-radius: 0.5rem;
+}
+
 .add-item-button {
   height: 2rem;
-  width: 15.5rem;
+  width: 12rem;
   margin-top: 0.5rem;
   background-color: #6495ed;
   border: 0.05rem solid black;

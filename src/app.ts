@@ -4,39 +4,30 @@ import { ItemList } from "./model/item-list";
 import { IdPool } from "./utils/item-id-pool";
 import { LightDarkMode } from "./utils/light-dark-mode";
 import { avaliableRGBs } from "./utils/utils";
+//import { Group } from "./model/group";
+import { Groups } from "./groups";
 
 const addButtonEl = document.getElementsByClassName(
   "add-item-button"
 )[0]! as HTMLButtonElement;
 const inputEl = document.querySelector("input")! as HTMLInputElement;
-const itemListEl = document.getElementsByClassName(
-  "menu-item-list"
-)[0]! as HTMLUListElement;
-const counterEl = document.getElementsByClassName(
-  "counter"
-)[0]! as HTMLParagraphElement;
-const removeAllItemsButtonEl = document.getElementsByClassName(
-  "remove-all-items-button"
-)[0]! as HTMLButtonElement;
-const lightDarkModeEl = document.getElementsByClassName(
-  "light-dark-mode"
-)[0]! as HTMLDivElement;
+const itemListEl = document.getElementsByClassName("menu-item-list")[0]! as HTMLUListElement;
+const counterEl = document.getElementsByClassName("counter")[0]! as HTMLParagraphElement;
+//const removeAllItemsButtonEl = document.getElementsByClassName("remove-all-items-button")[0]! as HTMLButtonElement;
+const lightDarkModeEl = document.getElementsByClassName("light-dark-mode")[0]! as HTMLDivElement;
 const canvasEl = document.querySelector("canvas")! as HTMLCanvasElement;
 const bodyEl = document.querySelector("body")! as HTMLBodyElement;
 const modeEl = lightDarkModeEl.querySelector("img")! as HTMLImageElement;
-const winnerEl = document.getElementsByClassName(
-  "winner"
-)[0]! as HTMLDivElement;
+const winnerEl = document.getElementsByClassName("winner")[0]! as HTMLDivElement;
 const footerEl = document.querySelector("footer")!;
-const authorsEl = document.getElementsByClassName(
-  "icons-authors"
-)[0]! as HTMLDivElement;
+const authorsEl = document.getElementsByClassName("icons-authors")[0]! as HTMLDivElement;
+const selectEl = document.getElementsByClassName("select")[0]! as HTMLSelectElement;
 
 const audio = new Audio("/static/roulette-wheel.mp3");
 
 const ctx = canvasEl.getContext("2d")!;
 
-const MAXIMUM_SIZE = 16;
+const MAXIMUM_SIZE = 32;
 const ROTATIONS = 20;
 const ANIMATION_FPS = 60;
 const WHEEL_OFFSET = 5;
@@ -61,9 +52,10 @@ function configure() {
   IdPool.initializeIdsPool(MAXIMUM_SIZE);
   addRemoveItem();
   addItemByEnter();
-  removeAllItems();
+  //removeAllItems();
   lightDarkMode();
   drawRouletteWheel(0);
+  selectList();
 
   canvasEl.addEventListener("click", startRoulette);
   footerEl.addEventListener("click", () => {
@@ -137,6 +129,66 @@ function registerChangeColorByClick(item: Item, menuItem: MenuItem) {
   });
 }
 
+function selectList() {
+  Groups.forEach((group) => {
+    selectEl.add(new Option(group.name))
+  });
+  selectEl.addEventListener("change", () => {
+    if (!animationId) {
+      clearWinner();
+      if (items.length > 0) {
+        items.forEach((menuItem) => menuItem.el.remove());
+        items.length = 0;
+        itemsList.clear();
+        IdPool.initializeIdsPool(MAXIMUM_SIZE);
+        updateCounter();
+        drawRouletteWheel(0);
+      }
+      var opt = selectEl.selectedOptions[0].text;
+      Groups.forEach(grp => {
+        if (grp.name == opt) {
+          grp.members.forEach((person) => {
+            const id = IdPool.getAnId();
+            if (id) {
+              inputEl.value = "";
+
+              const color = avaliableRGBs[id % avaliableRGBs.length];
+              const item = new Item(id, person, color);
+              const menuItem = new MenuItem(id, person, color);
+
+              menuItem.deleteItem.el.addEventListener("click", () => {
+                if (!animationId) {
+                  clearWinner();
+                  menuItem.el.remove();
+                  items.splice(items.indexOf(menuItem), 1);
+                  itemsList.remove(item);
+                  IdPool.addId(item.id);
+                  updateCounter();
+                  drawRouletteWheel(0);
+                }
+              });
+
+              registerChangeColorByClick(item, menuItem);
+
+              itemsList.add(item);
+              items.push(menuItem);
+              itemListEl.appendChild(menuItem.el);
+              updateCounter();
+              guessItemIndex = Math.floor(Math.random() * items.length);
+              segmentAngle = 360 / items.length;
+              maxAngle = 360 * ROTATIONS + segmentAngle * guessItemIndex;
+            }
+          })
+        }
+      })
+      updateCounter();
+      drawRouletteWheel(0);
+    }
+  });
+}
+
+
+/*
 function removeAllItems() {
   removeAllItemsButtonEl.addEventListener("click", () => {
     if (!animationId) {
@@ -152,7 +204,7 @@ function removeAllItems() {
     }
   });
 }
-
+*/
 function updateCounter() {
   counterEl.textContent = `${itemsList.items.length}/${MAXIMUM_SIZE}`;
   animateCounter();
@@ -255,7 +307,7 @@ function startRoulette() {
       } else {
         audio.play();
         addButtonEl.style.background = "#C0C0C0";
-        removeAllItemsButtonEl.style.background = "#C0C0C0";
+        //removeAllItemsButtonEl.style.background = "#C0C0C0";
         guessItemIndex = Math.floor(Math.random() * items.length);
         winner = itemsList.items[guessItemIndex].name;
         segmentAngle = 360 / items.length;
@@ -282,10 +334,11 @@ function beginAnimateRoulette() {
   } else {
     window.cancelAnimationFrame(animationId!);
     animationId = null;
-    winnerEl.textContent = `Winner: ${winner}`;
+    winnerEl.textContent = `Кто везунчик? ${winner}!`;
     addButtonEl.style.background = "#6082B6";
-    removeAllItemsButtonEl.style.background = "#6082B6";
+    //removeAllItemsButtonEl.style.background = "#6082B6";
     animateWinner();
+    men
   }
 }
 
@@ -314,6 +367,8 @@ function clearWinner() {
   if (winner) {
     winner = "";
     winnerEl.textContent = "";
+    updateCounter();
+    drawRouletteWheel(0);
     return true;
   }
   return false;

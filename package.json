@@ -1,7 +1,8 @@
 {
   "scripts": {
-    "start": "webpack-dev-server",
-    "build": "webpack --config webpack.config.prod.js && cp *.html dist/ && cp *.css dist/ && cp -r static dist/static && cp *.ico dist/"
+    "start": "webpack-dev-server  --mode development --hot --open",
+    "build": "webpack --config webpack.config.prod.js && cp *.html dist/ && cp *.css dist/ && cp -r static dist/static && cp *.ico dist/",
+    "nsis": "C:\\bin\\NSIS\\makensis.exe wheel.nsi"
   },
   "author": {
     "name": "Patryk Wojtiuk",
